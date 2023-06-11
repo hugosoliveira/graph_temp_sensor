@@ -93,14 +93,20 @@ xc = final_cooling_data['Temp']
 yc = final_cooling_data['Mean']/10E3
 c_err = final_cooling_data['STD']/10E3
 
-plt.figure()
-plt.errorbar(xh, (yh-ir)/ir, yerr=h_err/ir, fmt='o-', capsize =4, color='red')
-plt.errorbar(xc, (yc-ir)/ir, yerr=c_err/ir, fmt='o-',capsize =4, color='blue')
+#The way Niko Wants
+line_width = 3
+
+fig, ax = plt.subplots(figsize=(4, 4))
+ax.errorbar(xh, (yh-ir)/ir, yerr=h_err/ir, fmt='-s', markersize=8, linewidth=line_width, elinewidth=2,capsize =4, capthick=3,color='red')
+ax.errorbar(xc, (yc-ir)/ir, yerr=c_err/ir, fmt='-s',markersize=8, linewidth=line_width,elinewidth=2,capsize =4, capthick=3,color='blue')
+# Change plt.margin to have margins
 plt.margins(0)
-plt.tick_params(direction='in', axis='both', labelsize=16)
+plt.tick_params(direction='in', axis='both', length=6,width=line_width, bottom=True, top=True, left=True, right=True, labelsize=16)
 plt.xlabel('Temperature ($^\circ$C)',fontsize=18)
 plt.ylabel('$\Delta R / R_{0}$',fontsize=18)
 plt.title(file_name)
+for spine in ['top', 'bottom', 'left', 'right']:
+    ax.spines[spine].set_linewidth(line_width)
 
 fname = file_name+'.svg'
 plt.savefig(fname, dpi=330, facecolor='w', edgecolor='w',
@@ -108,15 +114,18 @@ plt.savefig(fname, dpi=330, facecolor='w', edgecolor='w',
         transparent=True)
 plt.show()
 
-plt.figure()
-plt.plot(separated_cycles['Time']/3600, separated_cycles['Res_Fil']/10E3, color='red')
+fig, ax = plt.subplots(figsize=(4, 4))
+ax.plot(separated_cycles['Time']/3600, separated_cycles['Res_Fil']/10E3, color='red')
+# Change plt.margin to have margins
 plt.margins(0)
-plt.tick_params(direction='in', axis='both', labelsize=16)
-plt.xlabel('Time (h)',fontsize=18)
-plt.ylabel('Resistance (kOhms)',fontsize=18)
+plt.tick_params(direction='in', axis='both', length=6,width=line_width, bottom=True, top=True, left=True, right=True, labelsize=16)
+plt.xlabel('Temperature ($^\circ$C)',fontsize=18)
+plt.ylabel('$\Delta R / R_{0}$',fontsize=18)
 plt.title(file_name)
-
-fname = file_name+'_cycle.svg'
+for spine in ['top', 'bottom', 'left', 'right']:
+    ax.spines[spine].set_linewidth(line_width)
+    
+fname = file_name+'_cycle'+'.svg'
 plt.savefig(fname, dpi=330, facecolor='w', edgecolor='w',
         orientation='portrait', format='svg',
         transparent=True)
