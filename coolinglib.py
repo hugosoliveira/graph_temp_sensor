@@ -41,7 +41,6 @@ def cooling(pairs_indexes_cooling, df, number_cycles,t_min,t_max,t_room):
         df2 = cooling_values.iloc[:, cooling_values.columns.get_loc('T_'+str(cycle))+1:]
     
         cooling_values = pd.concat([df1, temperatures, df2], axis=1)
-        cooling_values.to_csv('cooling_2.csv')
 
     # Final Cooling Data
     temperature_cooling = list(range(80, 24, -5))
