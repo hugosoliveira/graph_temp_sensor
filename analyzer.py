@@ -49,16 +49,15 @@ polynomial_order = 2
 df['Res_Fil'] = savgol_filter(df['Res'], window_size, polynomial_order)
 
 # Plot to Select the Data
-# plt.figure(figsize=(10, 6))
-# plt.plot(df['Time'], df['Res_Fil'], '--',color='lightgray')
-# points_get = plt.ginput(number_points, timeout=600)
-# plt.close()
+plt.figure(figsize=(10, 6))
+plt.plot(df['Time'], df['Res_Fil'], '--',color='lightgray')
+points_get = plt.ginput(number_points, timeout=600)
+plt.close()
 
-# # Organize the chosen data
-# steps = [num[0] for num in points_get]
-# steps = [round(num, 3) for num in steps]
+# Organize the chosen data
+steps = [num[0] for num in points_get]
+steps = [round(num, 3) for num in steps]
 # print(steps)
-steps = [12705.54, 13499.903, 13751.355, 17134.54, 17888.898, 18048.914, 21386.38, 22186.457, 22300.754, 25706.798, 26438.297, 26621.172, 30118.653, 30873.012, 31010.168, 34416.211]
 
 # Get the indexes from the data that corresponds to the manual selection
 count = 0
