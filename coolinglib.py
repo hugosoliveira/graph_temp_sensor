@@ -30,7 +30,7 @@ def cooling(pairs_indexes_cooling, df, number_cycles,t_min,t_max,t_room):
     for cycle in range(1, number_cycles+1):
         
         # quantity_numbers = cooling_values['T_'+ str(i+1)].count()
-        #Linear temperature Changes
+        #Linear temperature Changes -
         # temperatures = pd.DataFrame(np.linspace(80, 25, quantity_numbers).tolist(), columns=['Temp_'+str(i+1)])
         temperatures = pd.DataFrame(colc.cooling_calc(cooling_values, cycle, t_min,t_max,t_room), columns=['Temp_'+str(cycle)])
         
