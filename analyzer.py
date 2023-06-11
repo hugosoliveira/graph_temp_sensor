@@ -30,8 +30,8 @@ t_max = 80 # Higher Temperature
 t_min = 25 # Lower Temperature
 t_room = 20 # I considered this value as room temperature for the Newton Cooling Law
 
-# === Name of the file withou .csv ===
-file_name = 'brick.ter'
+# === Name of the file without .csv ===
+file_name = 'Marble.Ter'
 
 # Some preparations
 df = pd.read_csv(file_name + '.csv')
