@@ -22,6 +22,7 @@ from scipy.signal import savgol_filter
 import matplotlib.pyplot as plt
 import os
 from bisect import bisect_left 
+import matplotlib.ticker as ticker
 import heatinglib as ht
 import coolinglib as cl
 import pair_elements as pe
@@ -31,8 +32,8 @@ t_max = 80 # Higher Temperature
 t_min = 25 # Lower Temperature
 t_room = 20 # I considered this value as room temperature for the Newton Cooling Law
 
-# === Name of the file withou .csv ===
-file_name = 'Limex.P.Ter'
+# === Name of the file without .csv ===
+file_name = 'brick.ter'
 
 # Some preparations
 df = pd.read_csv(file_name + '.csv')
@@ -95,59 +96,108 @@ pairs_indexes_heating = pe.pair_elements_heating(indexes_data)
 pairs_indexes_cooling = pe.pair_elements_cooling(indexes_data)
 
 # Make all the calculations
-final_heating_data = ht.heating(pairs_indexes_heating, df, number_cycles, t_min, t_max, t_room)
-final_cooling_data = cl.cooling(pairs_indexes_cooling, df, number_cycles, t_min, t_max, t_room)
+final_heating_data, heating_values = ht.heating(pairs_indexes_heating, df, number_cycles, t_min, t_max, t_room)
+final_cooling_data, cooling_values = cl.cooling(pairs_indexes_cooling, df, number_cycles, t_min, t_max, t_room)
 
 # Separate the Interval Data
 separated_cycles = df[indexes_data[0]:indexes_data[-1]]
 separated_cycles['Time'] = separated_cycles['Time'] - separated_cycles['Time'].iloc[0]
 
 # Preparation for Plotting
-ir = separated_cycles['Res_Fil'].iloc[0]/10E3 # Initial Resistance
+# ir = separated_cycles['Res_Fil'].iloc[0]/1E3 # Initial Resistance
 xh = final_heating_data['Temp']
-yh = final_heating_data['Mean']/10E3
-h_err = final_heating_data['STD']/10E3
+yh = final_heating_data['Mean']/1E3
+h_err = final_heating_data['STD']/1E3
 xc = final_cooling_data['Temp']
-yc = final_cooling_data['Mean']/10E3
-c_err = final_cooling_data['STD']/10E3
+yc = final_cooling_data['Mean']/1E3
+c_err = final_cooling_data['STD']/1E3
+ir = yh[0]
+## GENERATING THE FIGURE
 
-#The way Niko Wants
-line_width = 3
+# ERROR FIGURE Resistance x Temperature
+# Generate the Figure
 fig, ax = plt.subplots(figsize=(4, 4))
-ax.errorbar(xh, (yh-ir)/ir, yerr=h_err/ir, fmt='-s', markersize=8, linewidth=line_width, elinewidth=2,capsize =4, capthick=3,color='red')
-ax.errorbar(xc, (yc-ir)/ir, yerr=c_err/ir, fmt='-s',markersize=8, linewidth=line_width,elinewidth=2,capsize =4, capthick=3,color='blue')
-# Change plt.margin to have margins
-# plt.margins(x=0)
-plt.xticks([30, 50, 70])
+# Plot the Figure as Error Bar
+ax.errorbar(xh, (yh-ir)/ir, yerr=h_err/ir, fmt='-s', markersize=8, linewidth=2, elinewidth=1.8,capsize =5.5, capthick=1.8,color='red')
+ax.errorbar(xc, (yc-ir)/ir, yerr=c_err/ir, fmt='-s',markersize=8, linewidth=2,elinewidth=1.8,capsize =5.5, capthick=1.8,color='blue')
+# What x-ticks to show 
+plt.xticks([25, 50, 75])
+ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=8, prune=None))
+# ax.xaxis.set_major_locator(ticker.MaxNLocator(nbins=5, prune=None))
+# Show the number below in a mandatory way 
+# plt.yticks(list(plt.yticks()[0]) + [0])
+# Minor Ticks
+# ax.xaxis.set_minor_locator(ticker.MultipleLocator(12.5))
+ax.tick_params(axis='x', which='minor', direction='in', length=4,width=1.7)
+# Margins
 plt.margins(y=0.1)  # 10% margin in the y-axis
-plt.tick_params(direction='in', axis='both', length=6,width=line_width, bottom=True, top=True, left=True, right=True, labelsize=16)
+plt.margins(x=0.0)
+# Major Ticks
+plt.tick_params(direction='in', axis='both', length=7,width=1.7, bottom=True, top=True, left=True, right=True, labelsize=16)
+# Labels
 plt.xlabel('Temperature ($^\circ$C)',fontsize=18)
 plt.ylabel('$\Delta R / R_{0}$',fontsize=18)
+# Graph Title
 plt.title(file_name)
+# Linewidth of the frame
 for spine in ['top', 'bottom', 'left', 'right']:
-    ax.spines[spine].set_linewidth(line_width)
-
+    ax.spines[spine].set_linewidth(1.7)
+# Save the graph
 fname = file_name+'.svg'
 plt.savefig(fname, dpi=330, facecolor='w', edgecolor='w',
         orientation='portrait', format='svg',
         transparent=True)
 plt.show()
 
+
+
+
 fig, ax = plt.subplots(figsize=(4, 4))
-ax.plot(separated_cycles['Time']/3600, separated_cycles['Res_Fil']/10E3, color='red')
-# Change plt.margin to have margins
-plt.margins(y=0.2)  # 10% margin in the y-axis
-plt.margins(x=0)
-plt.tick_params(direction='in', axis='both', length=6,width=line_width, bottom=True, top=True, left=True, right=True, labelsize=16)
+ax.plot(separated_cycles['Time']/3600,((separated_cycles['Res_Fil']/1E3-ir)/ir), color='red', linewidth=2)
+# Number of major ticks in the axis
+ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=8, prune=None))
+# ax.xaxis.set_major_locator(ticker.MaxNLocator(nbins=5, prune=None))
+# Margins 
+plt.margins(y=0.1)  # 10% margin in the y-axis
+plt.margins(x=0.0)
+# Ticks parameters
+plt.tick_params(direction='in', axis='both', length=6,width=1.7, bottom=True, top=True, left=True, right=True, labelsize=16)
+# Labels
 plt.xlabel('Time (h)',fontsize=18)
 plt.ylabel('$\Delta R / R_{0}$',fontsize=18)
+# Title of the graph
 plt.title(file_name)
+# Linewidth of the framebox
 for spine in ['top', 'bottom', 'left', 'right']:
-    ax.spines[spine].set_linewidth(line_width)
-    
+    ax.spines[spine].set_linewidth(1.7)
+#Save the file    
 fname = file_name+'_cycle'+'.svg'
 plt.savefig(fname, dpi=330, facecolor='w', edgecolor='w',
         orientation='portrait', format='svg',
         transparent=True)
 plt.show()
 
+# FIGURES FOR CONTROLLING THE DATA--NOT SAVED
+
+plt.figure()
+plt.plot(df['Time'],df['Res_Fil'], color='lightgray' )
+for n in range(1,number_cycles+1):
+    plt.plot(heating_values['T_'+str(n)], heating_values['C_'+str(n)], color='red')
+    plt.plot(cooling_values['T_'+str(n)], cooling_values['C_'+str(n)], color='blue')
+plt.show()
+
+plt.figure()
+for n in range(1,number_cycles+1):
+    plt.plot(final_heating_data['Temp'], final_heating_data['R_'+str(n)],'-o')
+    plt.legend('C_'+str(n))
+    plt.title('HEATING')
+    # plt.plot(cooling_values['T_'+str(n)], cooling_values['C_'+str(n)], color='blue')
+plt.show()
+
+plt.figure()
+for n in range(1,number_cycles+1):
+    plt.plot(final_cooling_data['Temp'], final_cooling_data['R_'+str(n)],'-o')
+    plt.legend('C_'+str(n))
+    plt.title('COOLING')
+    # plt.plot(cooling_values['T_'+str(n)], cooling_values['C_'+str(n)], color='blue')
+plt.show()
