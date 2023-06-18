@@ -33,7 +33,7 @@ t_min = 25 # Lower Temperature
 t_room = 20 # I considered this value as room temperature for the Newton Cooling Law
 
 # === Name of the file without .csv ===
-file_name = 'brick.ter'
+file_name = 'S.p.ter'
 
 # Some preparations
 df = pd.read_csv(file_name + '.csv')
@@ -122,7 +122,7 @@ ax.errorbar(xh, (yh-ir)/ir, yerr=h_err/ir, fmt='-s', markersize=8, linewidth=2, 
 ax.errorbar(xc, (yc-ir)/ir, yerr=c_err/ir, fmt='-s',markersize=8, linewidth=2,elinewidth=1.8,capsize =5.5, capthick=1.8,color='blue')
 # What x-ticks to show 
 plt.xticks([25, 50, 75])
-ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=8, prune=None))
+ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=5, prune=None))
 # ax.xaxis.set_major_locator(ticker.MaxNLocator(nbins=5, prune=None))
 # Show the number below in a mandatory way 
 # plt.yticks(list(plt.yticks()[0]) + [0])
@@ -155,7 +155,7 @@ plt.show()
 fig, ax = plt.subplots(figsize=(4, 4))
 ax.plot(separated_cycles['Time']/3600,((separated_cycles['Res_Fil']/1E3-ir)/ir), color='red', linewidth=2)
 # Number of major ticks in the axis
-ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=8, prune=None))
+ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=5, prune=None))
 # ax.xaxis.set_major_locator(ticker.MaxNLocator(nbins=5, prune=None))
 # Margins 
 plt.margins(y=0.1)  # 10% margin in the y-axis
@@ -201,3 +201,45 @@ for n in range(1,number_cycles+1):
     plt.title('COOLING')
     # plt.plot(cooling_values['T_'+str(n)], cooling_values['C_'+str(n)], color='blue')
 plt.show()
+
+# Calculate the approximate linear sensitivity
+# HEATING
+weights_h = 1. / (final_heating_data['STD']/yh)**2  # weights are usually taken as 1/sigma^2
+coefficients, residuals, _, _, _ = np.polyfit(final_heating_data['Temp'], (final_heating_data['Mean']-yh[0])/yh[0], 1, w=weights_h, full=True)
+slope_h, intercept_h = coefficients
+
+# calculate the error on the slope
+n = len(final_heating_data['Temp'])  # number of data points
+m = 1  # degree of the polynomial (1 for a line)
+dof = n - m - 1  # degrees of freedom
+residual_h = residuals[0]
+error_h = np.sqrt(residual_h / dof)
+
+# COOLING
+weights_c = 1. / (final_cooling_data['STD']/yh)**2  # weights are usually taken as 1/sigma^2
+coefficients, residuals, _, _, _ = np.polyfit(final_cooling_data['Temp'], (final_cooling_data['Mean']-yh[0])/yh[0], 1, w=weights_c, full=True)
+slope_c, intercept_c = coefficients
+
+# Calculate the error on the slope
+n = len(final_cooling_data['Temp'])  # number of data points
+m = 1  # degree of the polynomial (1 for a line)
+dof = n - m - 1  # degrees of freedom
+residual_c = residuals[0]
+error_c = np.sqrt(residual_c / dof)
+
+# ADDITIONAL INFO
+info = {
+    'Slope Heat(%)': [slope_h],
+    'Slope Heat Error(%)': [error_h],
+    'Slope Col(%)': [slope_c],
+    'Slope Col Error(%)': [error_c],
+    'R - 25C':[final_heating_data['Mean'].iloc[0]],
+    'R - 25C Error':[final_heating_data['STD'].iloc[0]],
+    'R - 80C':[final_heating_data['Mean'].iloc[-1]],
+    'R - 80C Error':[final_heating_data['STD'].iloc[-1]],
+        }
+
+# Print and Save Additional Info
+additonal_info = pd.DataFrame(info)
+print(additonal_info)
+additonal_info.to_csv(file_name + '_info.csv',index=False)
